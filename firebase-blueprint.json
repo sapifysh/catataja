@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Income or expense record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["expense", "income"] },
+        "amount": { "type": "number" },
+        "category": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 256 },
+        "account": { "type": "string", "maxLength": 128 },
+        "date": { "type": "string", "maxLength": 32 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "type", "amount", "category", "description", "account", "date", "createdAt"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Category for classifying transactions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["expense", "income", "both"] },
+        "icon": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "type", "icon"]
+    },
+    "Account": {
+      "title": "Account",
+      "description": "Money source or financial account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["cash", "bank", "ewallet", "credit"] },
+        "balance": { "type": "number" },
+        "initialBalance": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "type", "balance"]
+    },
+    "Budget": {
+      "title": "Budget",
+      "description": "Monthly spending budget limit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "category": { "type": "string", "maxLength": 128 },
+        "amount": { "type": "number" },
+        "period": { "type": "string", "enum": ["monthly"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "category", "amount", "period"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Application settings and preferences",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "currency": { "type": "string", "maxLength": 16 },
+        "locale": { "type": "string", "maxLength": 32 },
+        "theme": { "type": "string", "enum": ["light", "dark", "system"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "currency", "locale", "theme"]
+    },
+    "RecurringTransaction": {
+      "title": "RecurringTransaction",
+      "description": "Recurring income or expense template",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["expense", "income"] },
+        "amount": { "type": "number" },
+        "description": { "type": "string", "maxLength": 256 },
+        "category": { "type": "string", "maxLength": 128 },
+        "account": { "type": "string", "maxLength": 128 },
+        "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly", "yearly"] },
+        "next_date": { "type": "string", "maxLength": 32 },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "type", "amount", "description", "category", "account", "frequency", "next_date", "active"]
+    }
+  },
+  "firestore": {
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "All income and expense transactions"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "User transaction categories"
+    },
+    "/accounts/{accountId}": {
+      "schema": "Account",
+      "description": "Financial accounts and balances"
+    },
+    "/budgets/{budgetId}": {
+      "schema": "Budget",
+      "description": "Monthly spending budgets"
+    },
+    "/settings/{settingId}": {
+      "schema": "Settings",
+      "description": "Application settings and preferences"
+    },
+    "/recurring/{recurringId}": {
+      "schema": "RecurringTransaction",
+      "description": "Recurring income and expense schedules"
+    }
+  }
+}

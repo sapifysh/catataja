@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny: strictly forbid all unauthorized and public access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper: User must be authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: Forbid anonymous authentication (financial data must not be accessible anonymously)
+    function isNotAnonymous() {
+      return request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // Helper: Strict owner authorization for hitamdimas6@gmail.com
+    function isOwner() {
+      return isSignedIn() &&
+             isNotAnonymous() &&
+             (
+               request.auth.token.email == 'hitamdimas6@gmail.com' ||
+               request.auth.uid == 'zt302Z0KDYSQaPbw84qkb1Np97B2'
+             );
+    }
+
+    // Helper: Server-side Cloud Run service account authorization
+    function isAuthorizedServer() {
+      return isSignedIn() &&
+             request.auth.token.email == 'ais-sandbox@ais-asia-southeast1-88565b9546.iam.gserviceaccount.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    // Server-only OAuth credential vaults: completely inaccessible to all browser/clients
+    match /server_vault/{docId} {
+      allow read, write: if false;
+    }
+
+    match /server_tokens/{docId} {
+      allow read, write: if false;
+    }
+
+    // Test connection
+    match /test/{testId} {
+      allow get: if isOwner();
+    }
+
+    // Transactions: only the verified owner can read or write
+    match /transactions/{transactionId} {
+      allow read: if isOwner();
+      allow write: if isOwner() && isValidId(transactionId);
+    }
+
+    // Categories: only the verified owner can read or write
+    match /categories/{categoryId} {
+      allow read: if isOwner();
+      allow write: if isOwner() && isValidId(categoryId);
+    }
+
+    // Accounts: only the verified owner can read or write
+    match /accounts/{accountId} {
+      allow read: if isOwner();
+      allow write: if isOwner() && isValidId(accountId);
+    }
+
+    // Budgets: only the verified owner can read or write
+    match /budgets/{budgetId} {
+      allow read: if isOwner();
+      allow write: if isOwner() && isValidId(budgetId);
+    }
+
+    // Gmail sync state: browser may read only, write is completely blocked to prevent client tampering
+    match /settings/gmail_sync {
+      allow read: if isOwner();
+      allow write: if false;
+    }
+
+    // General app settings: only the verified owner can read or write (excluding protected gmail_sync)
+    match /settings/{settingId} {
+      allow read: if isOwner();
+      allow write: if isOwner() && isValidId(settingId) && settingId != 'gmail_sync';
+    }
+
+    // Gmail imported messages tracker: only the verified owner can read or write
+    match /gmail_imported_messages/{messageId} {
+      allow read: if isOwner();
+      allow write: if isOwner() && isValidId(messageId);
+    }
+
+    // Recurring: only the verified owner can read or write
+    match /recurring/{recurringId} {
+      allow read: if isOwner();
+      allow write: if isOwner() && isValidId(recurringId);
+    }
+  }
+}
